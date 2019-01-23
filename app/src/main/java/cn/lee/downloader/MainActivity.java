@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private final static String TAG = "MainActivity";
 
     TextView processTv;
+    Button startBtn, stopBtn, cancelBtn;
+    Downloader downloader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,32 +29,50 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         processTv = findViewById(R.id.process);
-
-        String testUrl = "http://s.chengadx.com/big_screen_ad/upload/gx/cn.ycmedia.lcinstall4300.apk";
-        String saveName = "cn.ycmedia.lcinstall4300.apk";
-        startDownload(testUrl, saveName);
-
+        startBtn = findViewById(R.id.startBtn);
+        stopBtn = findViewById(R.id.stopBtn);
+        cancelBtn = findViewById(R.id.cancelBtn);
+        startBtn.setOnClickListener((v) -> startDownload());
+        stopBtn.setOnClickListener((v) -> downloader.pause());
+        cancelBtn.setOnClickListener((v) -> downloader.cancel());
     }
 
 
-    private void startDownload(String testUrl, String saveName) {
-        Downloader downloader = new Downloader.Builder()
+    private void startDownload() {
+        downloader = new Downloader.Builder()
                 .savePath(Environment.getExternalStorageDirectory().getPath())
+                .downloadUrl("http://s.chengadx.com/big_screen_ad/upload/gx/cn.ycmedia.lcinstall4300.apk")
+                .saveName("cn.ycmedia.lcinstall4300.apk")
                 .connectTimeout(30)
                 .callTimeout(30)
                 .readTimeout(30)
                 .build();
-        downloader.download(this, testUrl, saveName, new DownloadListener() {
+        downloader.start(this, new DownloadListener() {
 
             @Override
-            public void onProcess(final String process) {
-                Log.e(TAG, "process[" + process + "]");
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        processTv.setText(process );
-                    }
-                });
+            public void onProgress(final String progress) {
+                Log.e(TAG, "progress[" + progress + "]");
+                runOnUiThread(() -> processTv.setText(progress));
+            }
+
+            @Override
+            public void onStart(long startLocation) {
+
+            }
+
+            @Override
+            public void onPause(long stopLocation) {
+
+            }
+
+            @Override
+            public void onResume(long resumeLocation) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
             }
 
             @Override
@@ -62,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFail(String errorInfo) {
                 Log.e(TAG, "onFail --> " + errorInfo);
+            }
+
+            @Override
+            public void onError(String errorInfo) {
+
             }
         });
     }
