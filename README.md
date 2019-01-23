@@ -8,8 +8,8 @@ Android环境下的断点下载器
 ````java
 new Downloader.Builder()
                 .savePath(Environment.getExternalStorageDirectory().getPath())
-                .downloadUrl("")
-                .saveName("")
+                .downloadUrl("https://imtt.dd.qq.com/16891/371C7C353C7B87011FB3DE8B12BCBCA5.apk?fsname=com.tencent.mm_7.0.0_1380.apk&csr=1bbd")
+                .saveName("wx.apk")
                 .connectTimeout(30)
                 .callTimeout(30)
                 .readTimeout(30)
