@@ -6,35 +6,56 @@ Android环境下的断点下载器
 
 
 ````java
-Downloader downloader = new Downloader.Builder()
-        .savePath(Environment.getExternalStorageDirectory().getPath())
-        .connectTimeout(30)
-        .callTimeout(30)
-        .readTimeout(30)
-        .build();
-downloader.download(this, testUrl, saveName, new DownloadListener() {
+new Downloader.Builder()
+                .savePath(Environment.getExternalStorageDirectory().getPath())
+                .downloadUrl("http://s.chengadx.com/big_screen_ad/upload/gx/cn.ycmedia.lcinstall4300.apk")
+                .saveName("cn.ycmedia.lcinstall4300.apk")
+                .connectTimeout(30)
+                .callTimeout(30)
+                .readTimeout(30)
+                .build().start(this, new DownloadListener() {
 
-    @Override
-    public void onProcess(final String process) {
-        Log.e(TAG, "process[" + process + "]");
-        runOnUiThread(new Runnable() {
             @Override
-            public void run() {
-                processTv.setText(process );
+            public void onProgress(final String progress) {
+                Log.e(TAG, "progress[" + progress + "]");
+                runOnUiThread(() -> processTv.setText(progress));
+            }
+
+            @Override
+            public void onStart(long startLocation) {
+
+            }
+
+            @Override
+            public void onPause(long stopLocation) {
+
+            }
+
+            @Override
+            public void onResume(long resumeLocation) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onSuccess(String filPath) {
+                Log.e(TAG, "onSuccess --> file[" + filPath + "]");
+            }
+
+            @Override
+            public void onFail(String errorInfo) {
+                Log.e(TAG, "onFail --> " + errorInfo);
+            }
+
+            @Override
+            public void onError(String errorInfo) {
+                Log.e(TAG, "onError --> " + errorInfo);
             }
         });
-    }
-
-    @Override
-    public void onSuccess(String filPath) {
-        Log.e(TAG, "onSuccess --> file[" + filPath + "]");
-    }
-
-    @Override
-    public void onFail(String errorInfo) {
-        Log.e(TAG, "onFail --> " + errorInfo);
-    }
-});      
 ````
 
 ## TODO 
