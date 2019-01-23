@@ -8,8 +8,8 @@ Android环境下的断点下载器
 ````java
 new Downloader.Builder()
                 .savePath(Environment.getExternalStorageDirectory().getPath())
-                .downloadUrl("http://s.chengadx.com/big_screen_ad/upload/gx/cn.ycmedia.lcinstall4300.apk")
-                .saveName("cn.ycmedia.lcinstall4300.apk")
+                .downloadUrl("")
+                .saveName("")
                 .connectTimeout(30)
                 .callTimeout(30)
                 .readTimeout(30)
