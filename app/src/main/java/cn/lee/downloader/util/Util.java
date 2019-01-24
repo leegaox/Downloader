@@ -10,9 +10,9 @@ import java.text.DecimalFormat;
  */
 public class Util {
 
-    public static String getProcess(double process, double total) {
-        //##.00%   百分比格式，后面不足2位的用0补齐
-        DecimalFormat df1 = new DecimalFormat("#0.00%");
-        return df1.format(process / total);
+    public static double getProcess(double process, double total) {
+        //#0.0%   百分比格式，后面不足2位的用0补齐
+        DecimalFormat df1 = new DecimalFormat("#0.0");
+        return Double.valueOf(df1.format(process / total));
     }
 }

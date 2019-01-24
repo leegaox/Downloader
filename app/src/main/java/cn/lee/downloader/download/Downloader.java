@@ -32,7 +32,6 @@ public class Downloader {
 
     private final static String TAG = "Downloader";
     private static final int DEFAULT_TIMEOUT = 15;
-
     private static final int DEFAULT_THREAD_NUM = 3;
 
     private Call<ResponseBody> mCall;
@@ -51,9 +50,12 @@ public class Downloader {
     private int callTimeout = DEFAULT_TIMEOUT;
 
 
-    private boolean isDownloading = true;
-    private boolean isStop = false;
-    private boolean isCancel = false;
+    public static final int DEFAULT = 0;
+    public static final int DOWNLOADING = 1;
+    public static final int PAUSE = 2;
+    public static final int CANCEL = 3;
+
+    private int downloadState = DEFAULT;
 
     /**
      * 私有构造函数，通过Builder 进行构造。
@@ -117,39 +119,7 @@ public class Downloader {
      * @param listener 下载监听回调
      */
     public void download(DownloadEntity entity, final DownloadListener listener) {
-        this.entity = entity;
-        this.listener = listener;
-        isDownloading = true;
-        isStop = false;
-        isCancel = false;
-        mCall = downloadApi.downloadFile("bytes=" + entity.getStartLocation() + "-", entity.getDownloadUrl());
-        mCall.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    ResponseBody body = response.body();
-                    String contentType = body.contentType().toString();
-                    long contentLength = body.contentLength();
-                    if (entity.getFileSize() == 0) {
-                        //首次下載，不知文件大小，更新文件大小
-                        entity.setFileSize(contentLength);
-                        db.insertRecord(entity);
-                    }
-                    //application/octet-stream 通用文件流
-                    Log.e(TAG, "fileSize[" + entity.getFileSize() + "] --- contentLength[" + contentLength + "] -- contentType[" + contentType + "]");
-                    writeStream2Disk(entity, body.byteStream());
-                } else {
-                    listener.onError("server contact failed");
-                    Log.d(TAG, "server contact failed");
-                }
-            }
 
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                listener.onError(t.toString());
-                Log.e(TAG, "onFailure");
-            }
-        });
     }
 
     /**
@@ -187,22 +157,31 @@ public class Downloader {
                     randomAccessFile.write(buff, 0, len);
                     fileSizeDownloaded += len;
                     Log.d(TAG, "file download: " + fileSizeDownloaded + "/ " + entity.getFileSize());
-                    listener.onProgress(Util.getProcess(fileSizeDownloaded, entity.getFileSize()));
                     //更新下载缓存下载偏移量
                     entity.setStartLocation(fileSizeDownloaded);
+                    listener.onProgress(Util.getProcess(fileSizeDownloaded * 100, entity.getFileSize()));
                 }
                 //TODO...校验文件大小和md5,当前只校验文件大小。
                 if (saveFile.length() == entity.getFileSize()) {
+                    downloadState = DEFAULT;
                     listener.onSuccess(entity.getPath());
                     db.updateDownloadProgress(entity.getPath(), entity.getStartLocation());
                     db.updateDownloadState(entity.getPath(), 1);
                 } else {
+                    downloadState = DEFAULT;
                     listener.onFail("down file invalid.");
                     db.updateDownloadState(entity.getPath(), -1);
                 }
 
             } catch (IOException e) {
-                onError(entity, e.toString(), listener);
+                if (downloadState == CANCEL) {
+                    if (listener != null) {
+                        listener.onCancel();
+                        downloadState = DEFAULT;
+                    }
+                }else{
+                    onError(entity, e.toString(), listener);
+                }
             } finally {
                 if (inputStream != null) {
                     inputStream.close();
@@ -222,7 +201,7 @@ public class Downloader {
         }
     }
 
-    public void start(Context context, DownloadListener listener) {
+    public void download(Context context, DownloadListener listener) {
         init(context);
         String path = savePath + File.separator + saveName;
         DownloadEntity record = db.queryRecord(path);
@@ -251,38 +230,69 @@ public class Downloader {
             //TODO...此时是否告知已经下载完成？
             return;
         }
-        download(record, listener);
+        this.entity = record;
+        this.listener = listener;
+        if (downloadState == PAUSE) {
+            listener.onResume(entity.getStartLocation());
+        } else {
+            listener.onStart(entity.getStartLocation());
+        }
+        downloadState = DOWNLOADING;
+        mCall = downloadApi.downloadFile("bytes=" + entity.getStartLocation() + "-", entity.getDownloadUrl());
+        mCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    ResponseBody body = response.body();
+                    String contentType = body.contentType().toString();
+                    long contentLength = body.contentLength();
+                    if (entity.getFileSize() == 0) {
+                        //首次下載，不知文件大小，更新文件大小
+                        entity.setFileSize(contentLength);
+                        db.insertRecord(entity);
+                    }
+                    //application/octet-stream 通用文件流
+                    Log.e(TAG, "fileSize[" + entity.getFileSize() + "] --- contentLength[" + contentLength + "] -- contentType[" + contentType + "]");
+                    writeStream2Disk(entity, body.byteStream());
+                } else {
+                    onError(entity, "server contact failed", listener);
+                    Log.d(TAG, "server contact failed");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                onError(entity, t.toString(), listener);
+                Log.e(TAG, "onFailure");
+            }
+        });
     }
 
     public void onError(DownloadEntity entity, String errorMsg, DownloadListener listener) {
         listener.onError(errorMsg);
+        downloadState = PAUSE;
         db.updateDownloadProgress(entity.getPath(), entity.getStartLocation());
     }
 
     public void pause() {
         if (mCall != null && !mCall.isCanceled()) {
             mCall.cancel();
-            isDownloading = false;
-            isCancel = true;
-            if (listener != null) {
-                listener.onPause(0);
-            }
+        }
+        downloadState = PAUSE;
+        if (listener != null) {
+            listener.onPause(entity.getStartLocation());
         }
         //TODO... 将info信息写入数据库
         db.updateDownloadProgress(entity.getPath(), entity.getStartLocation());
     }
 
     public void cancel() {
-        if (mCall != null && !mCall.isCanceled()) {
-            mCall.cancel();
-            isDownloading = false;
-            isCancel = true;
-            if (listener != null) {
-                listener.onCancel();
-            }
-        }
         //TODO...同步数据库
         db.deleteRecord(entity.getPath());
+        if (mCall != null && !mCall.isCanceled()) {
+            mCall.cancel();
+        }
+        downloadState = CANCEL;
     }
 
 
@@ -345,6 +355,11 @@ public class Downloader {
         if (db != null) {
             db.close();
         }
+    }
+
+
+    public boolean isDownlonding() {
+        return downloadState == DOWNLOADING;
     }
 
 

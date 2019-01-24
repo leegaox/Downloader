@@ -11,9 +11,9 @@ public interface DownloadListener {
     /**
      * 下载中回调
      *
-     * @param progress 下载进度 00.00%
+     * @param progress 下载进度 00.00
      */
-    void onProgress(String progress);
+    void onProgress(double progress);
 
     /**
      * 开始下载
