@@ -6,59 +6,66 @@
     android:layout_height="match_parent"
     tools:context="cn.lee.downloader.MainActivity">
 
-    <RelativeLayout
+    <ListView
+        android:id="@+id/list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:layout_margin="16dp">
+        android:layout_height="match_parent">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/operateRl"
-            android:layout_centerVertical="true"
-            android:orientation="horizontal">
+    </ListView>
 
-            <ProgressBar
-                android:id="@+id/process"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_toLeftOf="@+id/processTv"
-                android:progress="0" />
+    <!--<RelativeLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:gravity="center_vertical"-->
+    <!--android:layout_margin="16dp">-->
 
-            <TextView
-                android:id="@+id/processTv"
-                android:layout_width="48dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginLeft="8dp"
-                android:text="0.0%" />
+    <!--<RelativeLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_toLeftOf="@+id/operateRl"-->
+    <!--android:layout_centerVertical="true"-->
+    <!--android:orientation="horizontal">-->
+
+    <!--<ProgressBar-->
+    <!--android:id="@+id/process"-->
+    <!--style="@style/Widget.AppCompat.ProgressBar.Horizontal"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_toLeftOf="@+id/processTv"-->
+    <!--android:progress="0" />-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/processTv"-->
+    <!--android:layout_width="48dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_marginLeft="8dp"-->
+    <!--android:text="0.0%" />-->
 
 
-        </RelativeLayout>
+    <!--</RelativeLayout>-->
 
-        <LinearLayout
-            android:id="@+id/operateRl"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginLeft="8dp">
+    <!--<LinearLayout-->
+    <!--android:id="@+id/operateRl"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_marginLeft="8dp">-->
 
-            <Button
-                android:id="@+id/startBtn"
-                android:layout_width="56dp"
-                android:layout_height="wrap_content"
-                android:text="开始" />
+    <!--<Button-->
+    <!--android:id="@+id/startBtn"-->
+    <!--android:layout_width="56dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="开始" />-->
 
-            <Button
-                android:id="@+id/cancelBtn"
-                android:layout_width="56dp"
-                android:layout_height="wrap_content"
-                android:text="取消" />
+    <!--<Button-->
+    <!--android:id="@+id/cancelBtn"-->
+    <!--android:layout_width="56dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:text="取消" />-->
 
-        </LinearLayout>
+    <!--</LinearLayout>-->
 
-    </RelativeLayout>
+    <!--</RelativeLayout>-->
 
 </android.support.constraint.ConstraintLayout>

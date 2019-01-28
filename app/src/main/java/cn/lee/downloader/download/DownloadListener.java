@@ -52,7 +52,7 @@ public interface DownloadListener {
 
 
     /**
-     * 下载中断，网络等，可继续下载
+     * 主动终端网络请求、下载中断，网络等，可继续下载;
      * @param errorInfo
      */
     void onError(String errorInfo);
